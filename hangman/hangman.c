@@ -6,7 +6,7 @@
 /*   By: msuarez- <msuarez-@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/07/30 14:28:17 by msuarez-          #+#    #+#             */
-/*   Updated: 2019/07/31 18:20:32 by msuarez-         ###   ########.fr       */
+/*   Updated: 2019/08/01 19:36:30 by msuarez-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,17 +43,17 @@ int	ft_strcmp(char *s1, char *s2)
 	return (res);
 }
 
-int check_letter(char *str, char c)
+int check_letter(char *word, char c, char *guess)
 {
 	int i;
-	int j;
 
 	i = 0;
-	j = 0;
-	while (str[i] != '\0')
+	while (word[i] != '\0')
 	{
-		if (str[i] == c)
+		if (word[i] == c && guess[i] == '*')
+		{
 			return (i);
+		}
 		i++;
 	}
 	return (-1);
@@ -88,19 +88,6 @@ void draw_hangman(int chances)
 		}
 }
 
-/*void	check_star()
-{
-	int i;
-
-	i = 0;
-	while (*str)
-	{
-	while (str[i] >= 'a' && str[i] <= 'z')
-		i++;
-	}
-	return (i);
-}*/
-
 void	printStars(char *guess, char *word)
 {
 	int len = ft_strlen(word);
@@ -112,16 +99,35 @@ void	printStars(char *guess, char *word)
 	}
 }
 
+void	printTried(char *tried)
+{
+	int i;
+
+	i = 0;
+	while (tried[i] != '\0')
+	{
+		printf(" %c ", tried[i]);
+		i++;
+	}
+}
+
 int	main(int ac, char **av)
 {
+	if (ac != 2)
+	{
+		printf("Please input the word to be guessed after the program's name :)\n");
+		return (0);
+	}
 	int len = ft_strlen(av[1]);
 	int chances;
 	int counter = 0;
 	int i;
+	int j = 0;
 	int end;
 	char letter;
 	char guess[len];
 	char *word;
+	char tried[26];
 
 	end = len;
 	word = av[1];
@@ -130,13 +136,15 @@ int	main(int ac, char **av)
 		guess[counter] = '*';
 		counter++;
 	}
-
 	chances = 5;
 	while (1)
 	{
 		draw_hangman(chances);
 		printStars(guess, word);
 		printf("\n");
+		printf("Tried letters:");
+		printTried(tried);
+		printf("\n\n");
 		if (chances == 0)
 		{
 			printf("The answer was: %s\n", word);
@@ -149,11 +157,16 @@ int	main(int ac, char **av)
 		}
 		printf("Input your letter: ");
 		scanf(" %c", &letter);
-		i = check_letter(word, letter);
+		i = check_letter(word, letter, guess);
 		if (i >= 0)
 		{
 			printf("Correct guess!\n");
 			guess[i] = word[i];
+			while ((i = check_letter(word, letter, guess)) > 0)
+			{
+					guess[i] = word[i];
+					end--;
+			}
 			end--;
 			sleep(1);
 		}
@@ -161,7 +174,9 @@ int	main(int ac, char **av)
 		{
 			printf("Wrong guess!\n");
 			sleep(1);
+			tried[j] = letter;
 			chances--;
+			j++;
 		}
 	}
 	return (0);
